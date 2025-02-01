@@ -30,9 +30,12 @@ def save_spacy_file(data: list, file_path: str):
         ents = []
         for start, end, label in annotations:
             span = doc.char_span(start, end, label=label)
-            ents.append(span)
-        doc.ents = ents
-        db.add(doc)
+            if span is not None:  # Só adiciona spans válidos
+                ents.append(span)
+
+        if ents:  # Só adiciona ao DocBin se houver entidades válidas
+            doc.ents = ents
+            db.add(doc)
     db.to_disk(file_path)
 
 

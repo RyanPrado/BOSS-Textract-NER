@@ -30,14 +30,14 @@ Para executar o treinamento do modelo é necessário realizar a preparação dos
 ### Preparando os dados
 Para realizar as a preparação dos dados para a forma com qual a [spaCy](https://spacy.io) precisa para realizar o treinamento do modelo, execute o comando abaixo:
 ```sh
-uv run python -m src/prepare_train.py --data INPUT_CSV [--output OUTPUT_CSV]
+uv run src/prepare_train.py --data INPUT_CSV [--output OUTPUT_CSV]
 ```
 Um arquivo de saída será retornado por padrão em [`data/prepared/train.csv`](./data/prepared/train.csv), você pode informar o argumento `--output` para definir o local de saída.
 
 ### Realizando o treino
 Para realizar o treinamento do modelo execute o comando abaixo:
 ```sh
-uv run python -m src/train.py --data INPUT_CSV [--epochs MAX_EPOCHS]
+uv run src/train.py --data INPUT_CSV [--epochs MAX_EPOCHS]
 ```
 Você pode passar a quantidade de épocas que deseja, por padrão o valor a ser utilizado é o presente em `training.max_epochs` no arquivo de [configuração](./config.cfg).
 

@@ -16,7 +16,6 @@ args = parser.parse_args()
 
 def main():
     df = try_read_csv(args.data)
-    print(type(args.output))
     process_dataframe(
         df,
         args.output
@@ -40,10 +39,8 @@ def process_dataframe(df_input: pd.DataFrame, output_file: str):
     results = []
 
     for _, row in df_input.iterrows():
-        text = row["GL_LINE_DESCRIPTION"]
-        name = row["NAME"]
-
-        results = []
+        text = row["GL_LINE_DESCRIPTION"].upper().strip()
+        name = row["NAME"].upper().strip()
         # Encontrar a posição do nome dentro do texto
         start_idx = text.find(name)
         if start_idx != -1:
@@ -56,8 +53,8 @@ def process_dataframe(df_input: pd.DataFrame, output_file: str):
                     "ENTITY_TYPE": "ORG",
                 }
             )
-        df_output = pd.DataFrame(results)
-        df_output.to_csv(output_file, index=False, encoding="utf-8", sep=";")
+    df_output = pd.DataFrame(results)
+    df_output.to_csv(output_file, index=False, encoding="utf-8", sep=";")
 
 
 def try_read_csv(file_wrapper: TextIOWrapper):
