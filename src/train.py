@@ -42,7 +42,7 @@ def main():
     create_train(args.data)
     train(
         "./config.cfg",
-        use_gpu=int("0" if device != "cuda" else "-1"),
+        use_gpu=int("0" if device.type == "cuda" else "-1"),
         output_path=f"./models/sgs-ner-{__version__}-{get_next_model_number(__version__)}",
         overrides={
             "training.max_epochs": args.epochs
