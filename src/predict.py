@@ -23,6 +23,7 @@ parser.add_argument(
 )
 parser.add_argument("--sep", type=str)
 parser.add_argument("--col", type=str)
+parser.add_argument("--raw", choices=("True", "False"), default="True")
 parser.add_argument("--out_col", type=str)
 args = parser.parse_args()
 
@@ -33,7 +34,8 @@ if torch.cuda.is_available():
 def main():
     prompt_data = get_prompt()
     logger.info("Iniciando o modelo...")
-    if device == "cuda":
+    logger.info(f"Device {device}")
+    if device.type == "cuda":
         logger.info("Utilizando GPU para inferência.")
         spacy.prefer_gpu()
 
@@ -155,10 +157,12 @@ def get_prompt():
         "SEMICOLON": ";",
         "PIPE": "|",
     }.get(response["delimiter"])
-    response["table_start"] = detect_table_start(
-        args.data, delimiter=response["delimiter"]
-    )
 
+    response["table_start"] = (
+        0
+        if args.raw == "False"
+        else detect_table_start(args.data, delimiter=response["delimiter"])
+    )
     if response["table_start"] == -1:
         raise ValueError("Nenhuma tabela válida foi encontrada no arquivo CSV.")
 
@@ -247,6 +251,9 @@ def detect_table_start(csv_file: pathlib.Path, delimiter: str = "\t") -> int:
 
 def choose_column(df: pd.DataFrame):
     choices = list(df.columns.values)
+    if len(choices) == 1:
+        return choices[0]
+
     print("\n", end="")
     column = ScrollBar(
         prompt="Selecione a coluna:\n",
