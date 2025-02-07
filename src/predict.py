@@ -95,8 +95,6 @@ def main():
         values = [format_orgname(v) for v in values]
         if not bool(set(values) & set(ORGS_LIST)):
             ORGS_AMEND.extend([val for val in values if val not in ORGS_AMEND])
-            # if values not in ORGS_AMEND:
-            #     ORGS_AMEND.append(values)
 
     if ORGS_AMEND:
         print("\n", end="")

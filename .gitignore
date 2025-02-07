@@ -11,6 +11,5 @@ wheels/
 
 # Models
 models/
-
-# Data
-data
+data/
+release/
