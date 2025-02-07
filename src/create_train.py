@@ -1,5 +1,6 @@
-import time
+import pathlib
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 import spacy
 from spacy.tokens import DocBin
 from utils.logger import logger
@@ -10,9 +11,9 @@ TRAIN_SIZE = 0.8
 
 
 @logger.catch
-def create_train(file_wrapper: TextIOWrapper):
+def create_train(file_wrapper: TextIOWrapper, model_path: pathlib.Path):
     df = try_read_csv(file_wrapper)
-    logger.info(f"Dataset Amostras: {df.shape[0]}")
+    df = shuffle(df)
     DATASET = convert_to_spacy_format(df)
     del df
     logger.info(f"Dataset Length: {len(DATASET)}")
@@ -22,12 +23,19 @@ def create_train(file_wrapper: TextIOWrapper):
     logger.info(f"Treino: {len(train_data)} | Validação: {len(dev_data)}")
     logger.debug(f"Treino último item:\n{train_data[len(train_data) - 1]}")
     logger.debug(f"Validação último item:\n{dev_data[len(dev_data) - 1]}")
-    save_spacy_file(train_data, "./data/corpus/train.spacy")
-    save_spacy_file(dev_data, "./data/corpus/dev.spacy")
+    if model_path is not None:
+        logger.debug(f"Realizando transfer-learning para o modelo em {str(model_path)}")
+
+    save_spacy_file(train_data, "./data/corpus/train.spacy", model_path=model_path)
+    save_spacy_file(dev_data, "./data/corpus/dev.spacy", model_path=model_path)
 
 
-def save_spacy_file(TRAIN_DATA: list, file_path: str):
-    nlp = spacy.blank("pt")
+def save_spacy_file(TRAIN_DATA: list, file_path: str, model_path: str = None):
+    nlp = None
+    if model_path is not None:
+        nlp = spacy.load(model_path)
+    if nlp is None:
+        nlp = spacy.blank("pt")
 
     db = DocBin()
     invalid_spans = 0

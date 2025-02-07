@@ -1,3 +1,4 @@
+import pathlib
 import torch
 from spacy.cli.train import train
 from _version import __version__
@@ -22,6 +23,10 @@ parser.add_argument("--version", action="version", version=f"%(prog)s {__version
 parser.add_argument(
     "--data", type=argparse.FileType("r", encoding="UTF-8"), required=True
 )
+parser.add_argument(
+    "--model", type=pathlib.Path, default=pathlib.Path("./release/model")
+)
+parser.add_argument("--config", type=pathlib.Path, default=pathlib.Path("./config.cfg"))
 parser.add_argument("--epochs", type=int)
 args = parser.parse_args()
 
@@ -39,9 +44,9 @@ Informações:
 
 
 def main():
-    create_train(args.data)
+    create_train(args.data, args.model)
     train(
-        "./config.cfg",
+        config_path=args.config,
         use_gpu=int("0" if device.type == "cuda" else "-1"),
         output_path=f"./models/sgs-ner-{__version__}-{get_next_model_number(__version__)}",
         overrides={
