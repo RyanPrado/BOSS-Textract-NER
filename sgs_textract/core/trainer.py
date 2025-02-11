@@ -1,6 +1,5 @@
 from pathlib import Path
 import tempfile
-import pandas as pd
 import spacy
 from sklearn.model_selection import train_test_split
 from utils.logger import logger
@@ -20,9 +19,14 @@ class ModelTrainer:
         self.output_path = spacy.util.ensure_path(output_path)
         self.overrides = overrides
 
-    def train(self, df: pd.DataFrame, *, train_size: float = 0.8):
+    def train(
+        self,
+        dataset: list[str, Dict[str, list[int, int, str]]],
+        *,
+        train_size: float = 0.8,
+    ):
         train_data, dev_data = train_test_split(
-            df, train_size=train_size, random_state=42
+            dataset, train_size=train_size, random_state=42
         )
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -41,18 +45,12 @@ class ModelTrainer:
                 overrides=self.overrides,
             )
 
-    def _prepare_training_data(self, df: pd.DataFrame, output_path: Path):
-        # Criar dados de treinamento em formato spaCy
-        training_data = []
-        for _, row in df.iterrows():
-            entities = [(row["FIRST_CHAR"], row["LAST_CHAR"], row["ENTITY_TYPE"])]
-            training_data.append((row["SOURCE"], {"entities": entities}))
-
+    def _prepare_training_data(self, dataset: list, output_path: Path):
         # Salvar dados em formato spaCy
         doc_bin = spacy.tokens.DocBin()
         nlp = spacy.blank("pt")
         invalid_spans = 0
-        for text, annotations in training_data:
+        for text, annotations in dataset:
             doc = nlp.make_doc(text)
             ents = []
 

@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+
 from utils._version import __version__
 import pandas as pd
 from core.preprocessor import DataPreprocessor
@@ -27,33 +28,74 @@ SEPARATORS = {
 class MissingColumnError(Exception): ...
 
 
+class EmptyResponseError(Exception): ...
+
+
 class TrainCommand(BaseCommand):
     @classmethod
     def _get_columns(cls, df: pd.DataFrame, args):
         df_columns = list(df.columns.values)
+
+        src_column = args.src_col
+        res_columns = []
+        if args.res_col is not None and isinstance(args.res_col, str):
+            splits_columns = args.res_col.split(";")
+            res_columns = [
+                (lambda x: {"column": x[0], "type": x[1]})(x.split(":"))
+                for x in splits_columns
+            ]
+
+        listed_columns = [y["column"] for y in res_columns]
         src_column = (
-            args.src_col
-            if args.src_col is not None
+            src_column
+            if src_column is not None
             else cls._choose_column(
                 "Selecione a coluna de origem",
-                df_columns,
+                [x for x in df_columns if (x not in listed_columns)],
             )
         )
-        res_column = (
-            args.res_col
-            if args.res_col is not None
-            else cls._choose_column(
-                "Selecione a coluna com a resposta",
-                [x for x in df_columns if x != src_column],
-            )
-        )
+
+        if len(res_columns) == 0:
+            while True:
+                listed_columns = [y["column"] for y in res_columns]
+                opts_columns = [
+                    x
+                    for x in df_columns
+                    if (x != src_column) and (x not in listed_columns)
+                ]
+                selected_column = None
+                if opts_columns == 0:
+                    break
+                opts_columns.append("(Finalizar)")
+                selected_column = cls._choose_column(
+                    "Selecione uma coluna", opts_columns
+                )
+                if selected_column == "(Finalizar)":
+                    break
+                res_columns.append(
+                    {
+                        "column": selected_column,
+                        "type": cls._input_text(
+                            f"Digite o LABEL da coluna:\nSEUS LABELS ATUAIS [{','.join([x['type'] for x in res_columns])}]"
+                        ),
+                    }
+                )
 
         if src_column not in df.columns:
-            raise MissingColumnError(res_column)
-        if res_column not in df.columns:
-            raise MissingColumnError(res_column)
+            raise MissingColumnError(src_column)
 
-        return src_column, res_column
+        if len(res_columns) == 0:
+            raise EmptyResponseError(res_columns)
+
+        for x_column in res_columns:
+            if x_column["column"] not in df.columns:
+                raise MissingColumnError(x_column)
+            elif x_column["column"] == src_column:
+                raise TypeError(
+                    "Coluna de origem não pode ser também uma coluna de resposta"
+                )
+
+        return src_column, res_columns
 
     @staticmethod
     def _choose_column(question: str, columns: list):
@@ -71,6 +113,12 @@ class TrainCommand(BaseCommand):
             margin=0,
             pointer="→ ",
         ).launch()
+
+    @staticmethod
+    def _input_text(question: str):
+        print("\n", end="")
+        print(f"{question}\n")
+        return str(input()).upper()
 
     @staticmethod
     def add_arguments(parser):
@@ -110,15 +158,15 @@ class TrainCommand(BaseCommand):
             src_column, res_columns = cls._get_columns(df_input, args)
 
             logger.info(f"Coluna de origem: [{src_column}]")
-            logger.info(f"Coluna c/ resposta: [{res_column}]")
+            logger.info(f"Coluna c/ resposta: [{res_columns}]")
 
             logger.info("Iniciando criação do dataset de treino...")
             logger.info(f"Amostras listadas: {df_input.shape[0]}")
-            df_output = DataPreprocessor.create_train_dataframe(
-                df_input, src_column, res_column, MIN_SAMPLES=min_samples
+            dataset = DataPreprocessor.create_train_dataframe(
+                df_input, src_column, res_columns, MIN_SAMPLES=min_samples
             )
             logger.info("Iniciando criação do dataset de treino...")
-            logger.info(f"Amostras confirmadas: {df_output.shape[0]}")
+            logger.info(f"Amostras confirmadas: {len(dataset)}")
 
             config = load_config(args.config)
 
@@ -142,8 +190,10 @@ class TrainCommand(BaseCommand):
                 overrides["components.transformer.factory"] = "transformer"
 
             trainer = ModelTrainer(args.config, args.output, overrides=overrides)
-            trainer.train(df_output)
+            trainer.train(dataset)
 
+        except EmptyResponseError as e:
+            logger.error("Nenhuma coluna de resposta foi selecionada")
         except MissingColumnError as e:
             logger.error(
                 f"A Coluna {e.args[0]} não está presente no arquivo {file_path}"

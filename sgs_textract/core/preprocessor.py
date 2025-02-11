@@ -1,8 +1,5 @@
-from os import sep
 import pathlib
-import time
 import pandas as pd
-from torch import index_copy
 from tqdm import tqdm
 from utils.logger import logger
 
@@ -24,32 +21,33 @@ class DataPreprocessor:
 
     @classmethod
     def create_train_dataframe(
-        cls, df: pd.DataFrame, source_col: str, response_col: str, MIN_SAMPLES: int = 5
+        cls, df: pd.DataFrame, source_col: str, response_cols: str, MIN_SAMPLES: int = 5
     ):
         df[source_col] = cls._format_column(df[source_col])
-        df[response_col] = cls._format_column(df[response_col])
-        df = df.groupby(response_col).filter(lambda x: len(x) >= MIN_SAMPLES)
+        for response_col in response_cols:
+            df[response_col["column"]] = cls._format_column(df[response_col["column"]])
+            df = df.groupby(response_col["column"]).filter(
+                lambda x: len(x) >= MIN_SAMPLES
+            )
 
-        result_list = []
+        training_data = []
 
         for i, row in tqdm(df.iterrows(), total=df.shape[0]):
             source_val = row[source_col]
-            response_val = row[response_col]
-            # Encontrar a posição do nome dentro do texto
-            start_idx = source_val.find(response_val) - 1
-            if start_idx != -1:
-                end_idx = (
-                    start_idx + len(response_val)
-                ) + 1  # Último caractere da entidade
-                result_list.append(
-                    {
-                        "SOURCE": source_val,
-                        "FIRST_CHAR": start_idx,
-                        "LAST_CHAR": end_idx,
-                        "ENTITY_TYPE": "MISC",
-                    }
-                )
-        return pd.DataFrame(result_list)
+            train_element = [source_val, {"entities": []}]
+            for response_col in response_cols:
+                response_val = row[response_col["column"]]
+                start_idx = source_val.find(response_val) - 1
+                if start_idx != -1:
+                    end_idx = (start_idx + len(response_val)) + 1
+                    train_element[1]["entities"].append(
+                        (start_idx, end_idx, response_col["type"])
+                    )
+
+            if len(train_element[1]["entities"]) > 0:
+                training_data.append(train_element)
+
+        return training_data
 
     @classmethod
     def load(cls, file_path: pathlib.Path, separator: str, encoding: str):
