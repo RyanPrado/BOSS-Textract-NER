@@ -1,3 +1,4 @@
+import gc
 from pathlib import Path
 import tempfile
 import spacy
@@ -5,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from utils.logger import logger
 from typing import Union, Dict, Any
 from spacy.cli.train import train
+from tqdm import tqdm
 
 
 class ModelTrainer:
@@ -21,27 +23,35 @@ class ModelTrainer:
 
     def train(
         self,
-        dataset: list[str, Dict[str, list[int, int, str]]],
+        train_data: list[str, Dict[str, list[int, int, str]]],
         *,
         train_size: float = 0.8,
+        dev_data: list[str, Dict[str, list[int, int, str]]] = None,
+        gpu_id: int = -1,
     ):
-        train_data, dev_data = train_test_split(
-            dataset, train_size=train_size, random_state=42
-        )
+        if dev_data is None:
+            train_data, dev_data = train_test_split(
+                train_data, train_size=train_size, random_state=42
+            )
 
+        gc.collect()
         with tempfile.TemporaryDirectory() as temp_dir:
             train_path = Path(temp_dir) / "train.spacy"
             dev_path = Path(temp_dir) / "dev.spacy"
-            self._prepare_training_data(train_data, train_path)
-            self._prepare_training_data(dev_data, dev_path)
+            logger.info("Preparing Training data")
+            invalid_spans = 0
+            invalid_spans += self._prepare_training_data(train_data, train_path)
+            invalid_spans += self._prepare_training_data(dev_data, dev_path)
+            logger.info(f"Foram encontrados {invalid_spans} spans inválidos.")
 
             self.overrides["paths.train"] = str(train_path)
             self.overrides["paths.dev"] = str(dev_path)
 
+            del train_data, dev_data
             train(
                 self.config_path,
                 output_path=self.output_path,
-                use_gpu=0,
+                use_gpu=gpu_id,
                 overrides=self.overrides,
             )
 
@@ -50,13 +60,15 @@ class ModelTrainer:
         doc_bin = spacy.tokens.DocBin()
         nlp = spacy.blank("pt")
         invalid_spans = 0
-        for text, annotations in dataset:
+        for text, annotations in tqdm(dataset):
             doc = nlp.make_doc(text)
             ents = []
 
             for start, end, label in annotations["entities"]:
-                span = doc.char_span(start, end, label=label, alignment_mode="contract")
-                logger.trace(f"Span: {span} | {str(doc)[start:end]}")
+                span = doc.char_span(start, end, label=label, alignment_mode="strict")
+                logger.trace(
+                    f"Span: {str(span)} | Text: {str(doc)[start:end]} | Source: {str(doc)}"
+                )
                 if span is not None:
                     ents.append(span)
                 else:
@@ -64,5 +76,5 @@ class ModelTrainer:
 
             doc.ents = ents
             doc_bin.add(doc)
-        logger.info(f"Foram encontrados {invalid_spans} spans inválidos.")
         doc_bin.to_disk(output_path)
+        return invalid_spans
