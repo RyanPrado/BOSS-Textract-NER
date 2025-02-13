@@ -14,3 +14,8 @@ models/
 
 data/raw/*
 !data/raw/.gitkeep
+data/prepared/*
+!data/prepared/.gitkeep
+
+# Output Logs
+log/
