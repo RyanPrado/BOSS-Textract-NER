@@ -66,12 +66,15 @@ class ModelTrainer:
 
             for start, end, label in annotations["entities"]:
                 span = doc.char_span(start, end, label=label, alignment_mode="strict")
-                logger.trace(
-                    f"Span: {str(span)} | Text: {str(doc)[start:end]} | Source: {str(doc)}"
-                )
                 if span is not None:
+                    logger.trace(
+                        f"Span: {str(span)} | Text: {str(doc)[start:end]} | Source: {str(doc)}"
+                    )
                     ents.append(span)
                 else:
+                    logger.debug(
+                        f"Source don't has char_span {str(doc)}, trying extract {str(doc)[start:end]}"
+                    )
                     invalid_spans += 1
 
             doc.ents = ents
