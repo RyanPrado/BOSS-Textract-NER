@@ -119,7 +119,6 @@ class TrainCommand(BaseCommand):
         parser.add_argument("--model", type=Path)
         parser.add_argument("--src_col", type=str)
         parser.add_argument("--res_col", type=str)
-        parser.add_argument("--regex", type=Path)
         parser.add_argument("--encoding", type=str, default="UTF-8")
         parser.add_argument("--sep", type=str, default="SEMICOLON")
         parser.add_argument("--min_samples", type=int, default=5)

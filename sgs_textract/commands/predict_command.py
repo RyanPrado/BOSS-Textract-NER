@@ -19,7 +19,6 @@ class PredictCommand(BaseCommand):
         parser.add_argument("--src_col", type=str)
         parser.add_argument("--out_col", type=str)
         parser.add_argument("--start_header", type=int)
-        parser.add_argument("--regex", type=Path)
         parser.add_argument("--sep", type=str)
         parser.add_argument("--max_variation", type=int, default=0)
         parser.add_argument("--encoding", type=str, default="UTF-8")
