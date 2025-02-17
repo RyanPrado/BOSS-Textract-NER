@@ -94,16 +94,12 @@ class ModelPredicter:
 
                 ORGS_LIST.append(new_org_name if new_org_name is not None else org_name)
 
-        # df[output_column] = [
-        #     next((item for item in ORGS_LIST if item in text), existing)
-        #     for text, existing in zip(df[source_column], df[output_column])
-        # ]
-        df[output_column] = [
-            next((item for item in ORGS_LIST if item in text), existing)
-            if pd.isna(existing) or existing == ""
-            else existing
-            for text, existing in zip(df[source_column], df[output_column])
-        ]
+            df[output_column] = [
+                next((item for item in ORGS_LIST if item in text), existing)
+                if pd.isna(existing) or existing == ""
+                else existing
+                for text, existing in zip(df[source_column], df[output_column])
+            ]
 
         df = df.drop(columns=[source_column])
         return df
