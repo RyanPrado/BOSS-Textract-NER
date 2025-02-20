@@ -1,11 +1,10 @@
 import re
 from typing import Union
 from pathlib import Path
-
 from tqdm import tqdm
 
 from core.preprocessor import DataPreprocessor
-from utils.logger import logger
+from utils.logger import logger, log_path
 
 import pandas as pd
 import spacy
@@ -41,26 +40,28 @@ class ModelPredicter:
         source_column: str,
         output_column: str,
         max_variation: int,
+        log: bool = False,
     ):
         logger.info("Formatando o dados...")
+        tmp_column = source_column + ":TEMP_SYS"
         df.insert(
             df.columns.get_loc(source_column) + 1,
-            source_column + "_TEMP",
+            tmp_column,
             df[source_column].values,
         )
         df.insert(df.columns.get_loc(source_column) + 2, output_column, "")
-        source_column = source_column + "_TEMP"
-        df[source_column] = DataPreprocessor.format_column(df[source_column])
-        df = df.sort_values(by=source_column)
+        df[tmp_column] = DataPreprocessor.format_column(df[tmp_column])
+        df = df.sort_values(by=tmp_column)
         df = df.reset_index(drop=True)
         logger.info("Realizando predições...")
+        docs = []
 
         for i, row in tqdm(df.iterrows(), total=df.shape[0]):
-            text, response = str(row[source_column]), None
+            text, response = str(row[tmp_column]), None
 
             last_row = i - 1
             if last_row != -1:
-                last_text = str(df.at[last_row, source_column])
+                last_text = str(df.at[last_row, tmp_column])
                 last_response = str(df.at[last_row, output_column])
                 if last_response and (last_text == text):
                     response = last_response
@@ -72,6 +73,9 @@ class ModelPredicter:
                     continue
                 elif len(doc.ents) == 1:
                     response = str(doc.ents[0])
+
+                if log:
+                    docs.append(doc)
 
             if response is not None:
                 organization = self.orgs_list.get(response, {"rows": []})
@@ -98,8 +102,8 @@ class ModelPredicter:
                 next((item for item in ORGS_LIST if item in text), existing)
                 if pd.isna(existing) or existing == ""
                 else existing
-                for text, existing in zip(df[source_column], df[output_column])
+                for text, existing in zip(df[tmp_column], df[output_column])
             ]
 
-        df = df.drop(columns=[source_column])
-        return df
+        df = df.drop(columns=[tmp_column])
+        return df, docs

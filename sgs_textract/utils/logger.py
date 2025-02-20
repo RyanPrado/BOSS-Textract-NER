@@ -1,5 +1,6 @@
 from loguru import logger
 from tqdm import tqdm
+from pathlib import Path
 
 
 class _Logger:
@@ -20,4 +21,5 @@ class _Logger:
         return cls._instance
 
 
+log_path = Path(__file__).absolute().parents[2] / "logs/"
 logger = _Logger()

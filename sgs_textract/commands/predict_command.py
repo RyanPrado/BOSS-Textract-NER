@@ -1,13 +1,16 @@
 from pathlib import Path
 import sys
+from typing import Union
 
 from spacy.util import ensure_path
-from utils.logger import logger
+from utils.logger import logger, log_path
 from commands.base_command import BaseCommand
 from utils import SEPARATORS
 from core.preprocessor import DataPreprocessor
 from core.predicter import ModelPredicter
 from bullet import Bullet, Input, ScrollBar
+from spacy import displacy
+import time
 
 
 class PredictCommand(BaseCommand):
@@ -23,6 +26,8 @@ class PredictCommand(BaseCommand):
         parser.add_argument("--max_variation", type=int, default=0)
         parser.add_argument("--encoding", type=str, default="UTF-8")
         parser.add_argument("--gpu_id", type=int, default=-1)
+        parser.add_argument("--log", type=Path, default=Path(log_path))
+        parser.add_argument("--no-log", dest="log", action="store_false")
 
     @staticmethod
     def _get_start_header_index_by_column(
@@ -86,10 +91,10 @@ class PredictCommand(BaseCommand):
     @classmethod
     def execute(cls, args):
         try:
-            file_path = args.data
-            separator = SEPARATORS.get(args.sep)
-            model_path = args.model
-            encoding = args.encoding
+            file_path: Path = args.data
+            separator: str = SEPARATORS.get(args.sep)
+            model_path: Path = args.model
+            encoding: str = args.encoding
             separator = separator if separator is not None else args.sep
             separator = separator if separator is not None else cls._choose_separator()
             source_column = args.src_col if args.src_col is not None else None
@@ -130,19 +135,42 @@ class PredictCommand(BaseCommand):
             if output_column is None or output_column == "":
                 output_column = f"{source_column.upper()}_OUTPUT"
 
+            log_path: Union[Path, bool] = args.log
+            if isinstance(log_path, Path) and Path(log_path).is_dir():
+                log_path = log_path / Path(
+                    f"log_{time.strftime('%Y-%m-%d_%H-%M-%S')}.html"
+                )
+            if log_path:
+                logger.info(f"Logging in: {log_path.absolute()}")
+
             predicter = ModelPredicter(model_path, gpu_id=args.gpu_id)
-
-            df = predicter.predict(
-                df, source_column, output_column, max_variation=args.max_variation
+            df, docs = predicter.predict(
+                df,
+                source_column,
+                output_column,
+                max_variation=args.max_variation,
+                log=isinstance(log_path, Path),
             )
-            output_path = ensure_path(args.output)
+            output_path: Path = ensure_path(args.output)
 
-            if not output_path.exists():
+            if output_path.is_file():
+                output_path = output_path.with_suffix(".csv")
+            elif output_path.is_dir():
+                output_path = output_path / f"{file_path.stem}.csv"
+
+            if not output_path.parent.exists():
                 output_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.success(f"Created output directory: {output_path.parent}")
-                logger.info(f"Saving to output directory: {output_path.parent}")
+                logger.info(f"Created output directory: {output_path.parent}")
 
+            logger.success(f"Saving output file: {output_path}")
             df.to_csv(output_path, sep=separator, index=False)
+
+            if docs and isinstance(log_path, Path):
+                svg = displacy.render(docs, style="ent", page=True, minify=True)
+
+                if not log_path.parent.exists():
+                    log_path.parent.mkdir(parents=True, exist_ok=True)
+                log_path.open("w", encoding="utf-8").write(svg)
 
         except Exception as e:
             exception = sys.exc_info()
