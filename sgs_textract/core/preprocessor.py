@@ -25,19 +25,83 @@ class DataPreprocessor:
     @staticmethod
     def format_column(column):
         column = column.str.upper()
+        column = column.replace(r"<BR>", " ", regex=True)
         column = column.replace(r"\s+", " ", regex=True)
-        # [LTDA- ME,LTDA- EM,LTDA - EPP, LTDAME] -> LTDA
+        # Ending to [CPF,CPNJ or Date] -> Empty
+        column = column.replace(r"\d{11,}|\d{1,2}[\/\\]\d{2,4}$", "", regex=True)
+        # [ /NAME, NAME/] -> NAME
         column = column.replace(
-            r"LTDA\.?\s?[\.\-\|]?\w*\s*(ME|EM|EPP|\/\d{2,4})?", "LTDA", regex=True
+            r"(?:\s|^)[\/\\](?=[\w\s\.\,])|(?<=[\w\s\.\,])[\/\\](?=\s|$)",
+            " ",
+            regex=True,
         )
+        # [ENTER-NAME] -> ENTER NAME
+        column = column.replace(
+            r"(?<=[\w\s\.\,])\-(?=[\w\s\.\,])",
+            " - ",
+            regex=True,
+        )
+        # [GOOGLE,LLC] -> GOOGLE LLC
+        column = column.replace(
+            r"(?<=[\w\s\.\,])(?<!\s)[\\\/,\;]+(?=(?=\s)|(?!\s))(?<![\w\s])",
+            " ",
+            regex=True,
+        )
+
         # [ - ME, - EM, - EPP] -> Empty
         column = column.replace(r"\s?\-\s*(ME|EM|EPP)(?=$|\s+)", "", regex=True)
+        # [ S.] -> Empty
+        column = column.replace(r"\s+S\.(\s+|$)", "", regex=True)
+        # [B.V.] -> B.V
+        column = column.replace(r"B\.V\.?(\s+|$)", "B.V ", regex=True)
+        # [U.A.] -> U.A
+        column = column.replace(r"U\.A\.?(\s+|$)", "U.A ", regex=True)
+        # [A.S.] -> A.S
+        column = column.replace(r"A\.S\.?(\s+|$)", "A.S ", regex=True)
+        # [N.V.] -> N.V
+        column = column.replace(r"N\.V\.?(\s+|$)", "N.V ", regex=True)
+        # [Z.O.O.] -> Z.O.O
+        column = column.replace(
+            r"Z[\.\s]+O[\.\s]+O\.?[\/\\]?(\s+|$)", "Z.O.O ", regex=True
+        )
+        # [S.P.A.] -> S.P.A
+        column = column.replace(
+            r"S[\.\s]+P[\.\s]+A\.?[\/\\]?(\s+|$)", "S.P.A ", regex=True
+        )
+        # [S.R.O.] -> S.R.O
+        column = column.replace(
+            r"S[\.\s]+R[\.\s]+O\.?[\/\\]?(\s+|$)", "S.R.O ", regex=True
+        )
+        # [S.A.C.] -> S.A.C
+        column = column.replace(
+            r"S[\.\s]+A[\.\s]+C\.?[\/\\]?(\s+|$)", "S.A.C ", regex=True
+        )
+        # [S.A.S.] -> S.A.S
+        column = column.replace(
+            r"S[\.\s]+A[\.\s]+S\.?[\/\\]?(\s+|$)", "S.A.S ", regex=True
+        )
+        # [S.A.U.] -> S.A.U
+        column = column.replace(
+            r"S[\.\s]+A[\.\s]+U\.?[\/\\]?(\s+|$)", "S.A.U ", regex=True
+        )
+        # [S.P.A.] -> S.P.A
+        column = column.replace(
+            r"S[\.\s]+R[\.\s]+L\.?[\/\\]?(\s+|$)", "S.R.L ", regex=True
+        )
+        # [NF.1234-, NF.12345,NF.] -> Empty
+        column = column.replace(r"(?:NF.)(?:(?:\d+\-?)|(?=[\w\d]))", "", regex=True)
+        # [RPS: 1234, RPS 1234] -> Empty
+        column = column.replace(r"(?:RPS:?\s)(?:\d+\-?)", "", regex=True)
+        # [LTDA- ME,LTDA- EM,LTDA - EPP, LTDAME] -> LTDA
+        column = column.replace(
+            r"LTDA\.?\s?[\.\-\|]?(?=\w*)\s*(ME|EM|EPP|\/\d{2,4})?\s*",
+            "LTDA ",
+            regex=True,
+        )
         # [S.A., S\A, S/A, SA] -> S.A
         column = column.replace(
-            r"(?<=\s)S\.?/?\\?\s?A\.?(?:C\.)?(?=$|\s+)", "S.A", regex=True
+            r"(?<=\s)S\.?/?\\?\s?A\.?(?:C\.)?(?=\s+|$)", "S.A", regex=True
         )
-        # Ending to [CPF,CPNJ or Date] -> Empty
-        column = column.replace(r"\d{11,}$|\d{1,2}\/\d{2,4}$", "", regex=True)
         column = column.replace(r"\s+", " ", regex=True)
         column = column.str.strip()
 
