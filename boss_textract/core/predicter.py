@@ -4,7 +4,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from core.preprocessor import DataPreprocessor
-from utils.logger import logger, log_path
+from utils.logger import logger
 
 import pandas as pd
 import spacy
