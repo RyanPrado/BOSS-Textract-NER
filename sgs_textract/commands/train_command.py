@@ -130,7 +130,7 @@ class TrainCommand(BaseCommand):
         parser.add_argument(
             "--output",
             type=Path,
-            default=f"./models/sgs-ner-{__version__}-{get_next_model_number(__version__)}",
+            default=f"./models/boss-ner-{__version__}-{get_next_model_number(__version__)}",
         )
 
     @classmethod
@@ -191,7 +191,9 @@ class TrainCommand(BaseCommand):
             logger.info(
                 f"Amostras listadas: Treino [{df_input.shape[0] if df_eval is not None else math.ceil(df_input.shape[0] * train_size)}] | Validação [{df_eval.shape[0] if df_eval is not None else math.ceil(df_input.shape[0] * (1 - train_size))}]"
             )
-            df_input = df_input[~df_input[src_column].isin(df_eval[src_column])]
+
+            if df_eval is not None:
+                df_input = df_input[~df_input[src_column].isin(df_eval[src_column])]
 
             dataset = DataPreprocessor.create_train_dataframe(
                 df_input, src_column, res_columns, MIN_SAMPLES=min_samples
@@ -258,7 +260,7 @@ class TrainCommand(BaseCommand):
 
 
 def get_next_model_number(version: str) -> str:
-    pattern = re.compile(rf"sgs-ner-{version}-(\d+)")
+    pattern = re.compile(rf"boss-ner-{version}-(\d+)")
     models = glob.glob("./models/*")
     numbers = [
         int(pattern.search(model).group(1)) for model in models if pattern.search(model)

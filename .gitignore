@@ -18,4 +18,4 @@ data/prepared/*
 !data/prepared/.gitkeep
 
 # Output Logs
-log/
+logs/

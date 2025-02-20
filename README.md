@@ -1,10 +1,10 @@
-# SGS Textract NER
+# BOSS Textract NER
 
 Este projeto tem como objetivo realizar a extração de entidade nomeada (NER)
-o objetivo do seu desenvolvido foi devido a necessidade de aperfeiçoar a extração de organizações nos registros presentes no BOSS da SGS
+o objetivo do seu desenvolvido foi devido a necessidade de aperfeiçoar a extração de organizações nos registros presentes no BOSS
 
 ### 📕 Sumário
-- [SGS Textract NER](#sgs-textract-ner)
+- [BOSS Textract NER](#boss-textract-ner)
     - [📕 Sumário](#-sumário)
   - [🛠️ Softwares necessários](#️-softwares-necessários)
   - [💻 Como Instalar](#-como-instalar)
@@ -25,15 +25,15 @@ o objetivo do seu desenvolvido foi devido a necessidade de aperfeiçoar a extra�
 * 
 ## 💻 Como Instalar
 ```sh
-git clone https://github.com/RyanPrado/SGS-Textract-NER.git
-cd SGS-Textract-NER
+git clone https://github.com/RyanPrado/BOSS-Textract-NER.git
+cd BOSS-Textract-NER
 uv pip install
 ```
 
 ## ✅ Como Usar
-Para utilizar a ferramenta de predição basta utilizar o comando `uv run sgs_textract predict -h`
+Para utilizar a ferramenta de predição basta utilizar o comando `uv run boss_textract predict -h`
 ```sh
-uv run sgs_textract predict -h
+uv run boss_textract predict -h
 ```
 ### Argumentos do Comando Predict
 | Argumento       | Tipo      | Padrão  | Obrigatório |
@@ -74,30 +74,30 @@ Exemplos de dados:
 Lembre-se que a origens não podem ter repetição, ou seja, certifique-se de que sempre haja uma variação mesmo que minima em cada item semelhante da origem.
 
 ### Realizando treinamento
-Para utilizar a ferramenta de predição basta utilizar o comando `uv run sgs_textract train -h`
+Para utilizar a ferramenta de predição basta utilizar o comando `uv run boss_textract train -h`
 
 ```sh
-uv run sgs_textract train -h
+uv run boss_textract train -h
 ```
 
 ### Argumentos do Comando Train
-| Argumento        | Tipo                                                            |         Padrão         | Obrigatório |
-| ---------------- | --------------------------------------------------------------- | :--------------------: | :---------: |
-| --data           | `File`                                                          |         *N/A*          |      ✅      |
-| --config         | [`SpaCy Config File`](https://spacy.io/api/data-formats#config) |         *N/A*          |      ✅      |
-| --eval           | `File`                                                          |         *N/A*          |      ⬜️      |
-| --model          | `Folder`                                                        |         *N/A*          |      ⬜️      |
-| --src_col        | `String`                                                        |         *N/A*          |      ⬜️      |
-| --res_col        | `String`                                                        |         *N/A*          |      ⬜️      |
-| --sep            | `String`                                                        |          *;*           |      ⬜️      |
-| --min_samples    | `Integer`                                                       |         **5**          |      ⬜️      |
-| --epochs         | `Integer`                                                       |         **10**         |      ⬜️      |
-| --train_size     | `Float`                                                         |        **0.8**         |      ⬜️      |
-| --dropout        | `Float`                                                         |         *N/A*          |      ⬜️      |
-| --eval_frequency | `Integer`                                                       |         *N/A*          |      ⬜️      |
-| --output         | `Folder`                                                        | *./models/sgs-ner-X-X* |      ⬜️      |
-| --encoding       | `String`                                                        |        *UTF-8*         |      ⬜️      |
-| --gpu_id         | `Integer`                                                       |         **-1**         |      ⬜️      |
+| Argumento        | Tipo                                                            |         Padrão          | Obrigatório |
+| ---------------- | --------------------------------------------------------------- | :---------------------: | :---------: |
+| --data           | `File`                                                          |          *N/A*          |      ✅      |
+| --config         | [`SpaCy Config File`](https://spacy.io/api/data-formats#config) |          *N/A*          |      ✅      |
+| --eval           | `File`                                                          |          *N/A*          |      ⬜️      |
+| --model          | `Folder`                                                        |          *N/A*          |      ⬜️      |
+| --src_col        | `String`                                                        |          *N/A*          |      ⬜️      |
+| --res_col        | `String`                                                        |          *N/A*          |      ⬜️      |
+| --sep            | `String`                                                        |           *;*           |      ⬜️      |
+| --min_samples    | `Integer`                                                       |          **5**          |      ⬜️      |
+| --epochs         | `Integer`                                                       |         **10**          |      ⬜️      |
+| --train_size     | `Float`                                                         |         **0.8**         |      ⬜️      |
+| --dropout        | `Float`                                                         |          *N/A*          |      ⬜️      |
+| --eval_frequency | `Integer`                                                       |          *N/A*          |      ⬜️      |
+| --output         | `Folder`                                                        | *./models/boss-ner-X-X* |      ⬜️      |
+| --encoding       | `String`                                                        |         *UTF-8*         |      ⬜️      |
+| --gpu_id         | `Integer`                                                       |         **-1**          |      ⬜️      |
 
 * `--data*` - Arquivo `.csv` para o modelo treinar;
 * `--config*` - Arquivo `.cfg` com as configurações do modelo;

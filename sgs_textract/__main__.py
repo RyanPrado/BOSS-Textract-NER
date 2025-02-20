@@ -10,7 +10,7 @@ COMMANDS = {
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="SGS Textract NER")
+    parser = argparse.ArgumentParser(prog="BOSS Textract NER")
     subparsers = parser.add_subparsers(dest="command")
 
     for command_name, command_cls in COMMANDS.items():
