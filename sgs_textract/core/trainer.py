@@ -40,8 +40,12 @@ class ModelTrainer:
             dev_path = Path(temp_dir) / "dev.spacy"
             logger.info("Preparing Training data")
             invalid_spans = 0
-            invalid_spans += self._prepare_training_data(train_data, train_path)
-            invalid_spans += self._prepare_training_data(dev_data, dev_path)
+            invalid_spans += self._prepare_training_data(
+                train_data, train_path, "TRAIN DATASET"
+            )
+            invalid_spans += self._prepare_training_data(
+                dev_data, dev_path, "EVAL DATASET"
+            )
             logger.info(f"Foram encontrados {invalid_spans} spans inválidos.")
 
             self.overrides["paths.train"] = str(train_path)
@@ -55,7 +59,7 @@ class ModelTrainer:
                 overrides=self.overrides,
             )
 
-    def _prepare_training_data(self, dataset: list, output_path: Path):
+    def _prepare_training_data(self, dataset: list, output_path: Path, debug_name: str):
         # Salvar dados em formato spaCy
         doc_bin = spacy.tokens.DocBin()
         nlp = spacy.blank("pt")
@@ -73,7 +77,7 @@ class ModelTrainer:
                     ents.append(span)
                 else:
                     logger.debug(
-                        f"Source don't has char_span {str(doc)}, trying extract {str(doc)[start:end]}"
+                        f"{f'[{debug_name}] ' if debug_name is not None else ''}Source don't has char_span [{str(doc)}] <- [{str(doc)[start:end]}]"
                     )
                     invalid_spans += 1
 
