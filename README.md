@@ -8,7 +8,8 @@ o objetivo do seu desenvolvido foi devido a necessidade de aperfeiçoar a extra�
     - [📕 Sumário](#-sumário)
   - [🛠️ Softwares necessários](#️-softwares-necessários)
   - [💻 Como Instalar](#-como-instalar)
-  - [✅ Como Usar](#-como-usar)
+  - [☄️ Como Usar (Notebook)](#️-como-usar-notebook)
+  - [✅ Como Usar (CLI)](#-como-usar-cli)
     - [Argumentos do Comando Predict](#argumentos-do-comando-predict)
   - [🤖 Como treinar?](#-como-treinar)
     - [Preparando os dados](#preparando-os-dados)
@@ -29,8 +30,9 @@ git clone https://github.com/RyanPrado/BOSS-Textract-NER.git
 cd BOSS-Textract-NER
 uv pip install -r pyproject.toml
 ```
-
-## ✅ Como Usar
+## ☄️ Como Usar (Notebook)
+Para utilizar a aplicação através dos notebooks [jupyter](https://jupyter.org), basta acessar o arquivo em [`/notebook/app.ipynb`](./notebook/app.ipynb), basta editar as variáveis apresentadas no documento e utiliza-lo.
+## ✅ Como Usar (CLI)
 Para utilizar a ferramenta de predição basta utilizar o comando `uv run boss_textract predict -h`
 ```sh
 uv run boss_textract predict -h
