@@ -27,7 +27,7 @@ o objetivo do seu desenvolvido foi devido a necessidade de aperfeiçoar a extra�
 ```sh
 git clone https://github.com/RyanPrado/BOSS-Textract-NER.git
 cd BOSS-Textract-NER
-uv pip install
+uv pip install -r pyproject.toml
 ```
 
 ## ✅ Como Usar
