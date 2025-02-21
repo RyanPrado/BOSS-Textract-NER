@@ -89,7 +89,7 @@ class DataPreprocessor:
             r"S[\.\s]+R[\.\s]+L\.?[\/\\]?(\s+|$)", "S.R.L ", regex=True
         )
         # [NF.1234-, NF.12345,NF.] -> Empty
-        column = column.replace(r"(?:NF.)(?:(?:\d+\-?)|(?=[\w\d]))", "", regex=True)
+        column = column.replace(r"(?:NF\.)(?:(?:\d+\-?)|(?=[\w\d]))", "", regex=True)
         # [RPS: 1234, RPS 1234] -> Empty
         column = column.replace(r"(?:RPS:?\s)(?:\d+\-?)", "", regex=True)
         # [LTDA- ME,LTDA- EM,LTDA - EPP, LTDAME] -> LTDA

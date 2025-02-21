@@ -10,8 +10,10 @@ wheels/
 .venv
 
 # Output Models
-models/
+models/*
+!models/.gitkeep
 
+# Data Folder
 data/raw/*
 !data/raw/.gitkeep
 data/prepared/*

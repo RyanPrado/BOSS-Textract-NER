@@ -164,6 +164,7 @@ class PredictCommand(BaseCommand):
 
             logger.success(f"Saving output file: {output_path}")
             df.to_csv(output_path, sep=separator, index=False)
+            del df
 
             if docs and isinstance(log_path, Path):
                 svg = displacy.render(docs, style="ent", page=True, minify=True)
