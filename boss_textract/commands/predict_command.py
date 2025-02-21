@@ -1,14 +1,17 @@
 from pathlib import Path
 import sys
 from typing import Union
-
+import os
 from spacy.util import ensure_path
 from utils.logger import logger, log_path
 from commands.base_command import BaseCommand
 from utils import SEPARATORS
 from core.preprocessor import DataPreprocessor
 from core.predicter import ModelPredicter
-from bullet import Bullet, Input, ScrollBar
+
+if os.name != "nt":
+    from bullet import Bullet, Input, ScrollBar
+
 from spacy import displacy
 import time
 
@@ -51,6 +54,9 @@ class PredictCommand(BaseCommand):
 
     @staticmethod
     def _choose_column(question: str, columns: list):
+        if os.name == "nt":
+            return None
+
         if columns is not None and len(columns) == 0:
             raise ValueError("Não a colunas disponíveis para seleção")
         elif len(columns) == 1:
@@ -68,6 +74,9 @@ class PredictCommand(BaseCommand):
 
     @staticmethod
     def _choose_separator():
+        if os.name == "nt":
+            return None
+
         SEPARATORS_TITLES = {
             "Ponto e vírgula (;)": "SEMICOLON",
             "Vírgula (,)": "COMMA",

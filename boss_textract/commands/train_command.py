@@ -3,9 +3,7 @@ import math
 from pathlib import Path
 import sys
 from typing import Union
-
-from torch import Value
-
+import os
 from utils._version import __version__
 import pandas as pd
 from core.preprocessor import DataPreprocessor
@@ -17,7 +15,8 @@ import re
 from commands.base_command import BaseCommand
 from spacy.util import load_config
 
-from bullet import ScrollBar
+if os.name != "nt":
+    from bullet import ScrollBar
 
 
 class MissingColumnError(Exception): ...
@@ -94,6 +93,8 @@ class TrainCommand(BaseCommand):
             raise ValueError("Não a colunas disponíveis para seleção")
         elif len(columns) == 1:
             return columns[0]
+        if os.name == "nt":
+            return None
 
         print("\n", end="")
         return ScrollBar(
