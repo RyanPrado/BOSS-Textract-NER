@@ -20,6 +20,7 @@ class DataPreprocessor:
                 encoding=encoding,
                 index_col=False,
                 header=start_header,
+                on_bad_lines='warn'
             )
 
     @staticmethod
