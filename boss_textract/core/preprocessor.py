@@ -18,9 +18,10 @@ class DataPreprocessor:
                 file,
                 sep=separator,
                 encoding=encoding,
+                dtype=str,
                 index_col=False,
                 header=start_header,
-                on_bad_lines='warn'
+                on_bad_lines="warn",
             )
 
     @staticmethod
